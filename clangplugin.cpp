@@ -947,20 +947,53 @@ int ClangPlugin::UpdateCompileCommand(cbEditor* ed)
 
     wxStringTokenizer tokenizer(compileCommand);
     compileCommand.Empty();
-    wxString pathStr;
     while (tokenizer.HasMoreTokens())
     {
         wxString flag = tokenizer.GetNextToken();
+
+        wxString pathStr, prefix;
+
         // make all include paths absolute, so clang does not choke if Code::Blocks switches directories
-        if (flag.StartsWith(wxT("-I"), &pathStr))
+        if (flag == wxT("-I") && tokenizer.HasMoreTokens())
         {
-            wxFileName path(pathStr);
-            if (path.Normalize(wxPATH_NORM_ALL & ~wxPATH_NORM_CASE))
-                flag = wxT("-I") + path.GetFullPath();
+            pathStr = tokenizer.GetNextToken();
+            prefix = wxT("-I ");
         }
+        else if (flag == wxT("-isystem") && tokenizer.HasMoreTokens())
+        {
+            pathStr = tokenizer.GetNextToken();
+            prefix = wxT("-isystem ");
+        }
+        else if (flag.StartsWith(wxT("-I"), &pathStr))
+        {
+            prefix = wxT("-I");
+        }
+        else if (flag.StartsWith(wxT("-isystem"), &pathStr))
+        {
+            prefix = wxT("-isystem");
+        }
+
+        if (pathStr != wxEmptyString)
+        {
+            // strip quotes
+            if (pathStr.StartsWith(wxT("\"")) && pathStr.EndsWith(wxT("\"")))
+            {
+                pathStr = pathStr.SubString(1, pathStr.length() - 2);
+            }
+
+            wxFileName path(pathStr);
+
+            // resolve to absolute path
+            if (path.Normalize(wxPATH_NORM_ALL & ~wxPATH_NORM_CASE))
+                flag = prefix + path.GetFullPath();
+        }
+
         compileCommand += flag + wxT(" ");
     }
+
     compileCommand += GetCompilerInclDirs(comp->GetID());
+
+    Manager::Get()->GetLogManager()->Log(compileCommand);
 
     m_UpdateCompileCommand--;
 
