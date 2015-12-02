@@ -231,6 +231,8 @@ std::vector<ClangPlugin::CCToken> ClangPlugin::GetAutocompList(bool isAuto, cbEd
 
 wxString ClangPlugin::GetDocumentation(const CCToken& token)
 {
+    return wxEmptyString;
+
 #ifdef CLANGPLUGIN_TRACE_FUNCTIONS
     fprintf(stdout,"%s\n", __PRETTY_FUNCTION__);
 #endif

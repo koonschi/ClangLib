@@ -57,6 +57,8 @@ void ClangDiagnostics::OnTimer(wxTimerEvent& event)
 
 void ClangDiagnostics::OnDiagnostics( ClangEvent& event )
 {
+    return;
+
     ClDiagnosticLevel diagLv = dlFull; // TODO
     bool update = false;
     EditorManager* edMgr = Manager::Get()->GetEditorManager();

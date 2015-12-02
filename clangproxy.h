@@ -707,7 +707,8 @@ private:
     CXIndex m_ClIndex[2];
 private: // Thread
     wxEvtHandler* m_pEventCallbackHandler;
-    BackgroundThread* m_pThread;
+    std::vector<BackgroundThread*> m_pThreads;
+    int currentThread;
     //BackgroundThread* m_pParsingThread;
 };
 

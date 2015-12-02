@@ -682,11 +682,16 @@ ClangProxy::ClangProxy( wxEvtHandler* pEvtCallbackHandler, ClTokenDatabase& data
     m_Mutex(),
     m_Database(database),
     m_CppKeywords(cppKeywords),
-    m_pEventCallbackHandler(pEvtCallbackHandler)
+    m_pEventCallbackHandler(pEvtCallbackHandler),
+    currentThread(0)
 {
     m_ClIndex[0] = clang_createIndex(1, 1);
     m_ClIndex[1] = clang_createIndex(1, 1);
-    m_pThread = new BackgroundThread(false);
+
+    for (int i = 0; i < 6; ++i)
+    {
+        m_pThreads.push_back(new BackgroundThread(false));
+    }
 }
 
 ClangProxy::~ClangProxy()
@@ -1578,13 +1583,16 @@ void ClangProxy::GetDiagnostics(ClTranslUnitId translUnitId, const wxString& fil
 
 void ClangProxy::AppendPendingJob( ClangProxy::ClangJob& job )
 {
-    if (!m_pThread)
+    if (m_pThreads.empty())
     {
         return;
     }
+
     ClangProxy::ClangJob* pJob = job.Clone();
     pJob->SetProxy(this);
-    m_pThread->Queue(pJob);
+
+    currentThread = (currentThread + 1) % m_pThreads.size();
+    m_pThreads[currentThread]->Queue(pJob);
 
     return;
 }
