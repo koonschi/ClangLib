@@ -730,12 +730,15 @@ void ClangProxy::CreateTranslationUnit(const wxString& filename, const wxString&
     std::vector<const char*> args;
     while (tokenizer.HasMoreTokens())
     {
-        const wxString& compilerSwitch = tokenizer.GetNextToken();
+        wxString compilerSwitch = tokenizer.GetNextToken();
+        if (compilerSwitch.StartsWith(wxT("\"")) && compilerSwitch.EndsWith(wxT("\"")))
+            compilerSwitch = compilerSwitch.SubString(1, compilerSwitch.length() - 2);
         if (std::binary_search(unknownOptions.begin(), unknownOptions.end(), compilerSwitch))
             continue;
         argsBuffer.push_back(compilerSwitch.ToUTF8());
         args.push_back(argsBuffer.back().data());
     }
+
     std::vector<ClTranslationUnit>::iterator it;
     int id = 0;
     ClTranslUnitId translId = -1;

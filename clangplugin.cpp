@@ -975,17 +975,25 @@ int ClangPlugin::UpdateCompileCommand(cbEditor* ed)
 
         if (pathStr != wxEmptyString)
         {
+            bool quotes = false;
             // strip quotes
             if (pathStr.StartsWith(wxT("\"")) && pathStr.EndsWith(wxT("\"")))
             {
                 pathStr = pathStr.SubString(1, pathStr.length() - 2);
+                quotes = true;
             }
 
             wxFileName path(pathStr);
 
             // resolve to absolute path
             if (path.Normalize(wxPATH_NORM_ALL & ~wxPATH_NORM_CASE))
-                flag = prefix + path.GetFullPath();
+            {
+                flag = prefix;
+                if (quotes) flag += wxT("\"");
+                flag += path.GetFullPath();
+                if (quotes) flag += wxT("\"");
+            }
+
         }
 
         compileCommand += flag + wxT(" ");
